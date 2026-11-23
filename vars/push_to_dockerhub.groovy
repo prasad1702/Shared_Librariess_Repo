@@ -1,6 +1,19 @@
-def call(String ProjectName, String ImageTag, String DockerHubUser){
-  withCredentials([usernamePassword(credentialsId: 'docHubCred',usernameVariable: 'docHubUser',passwordVariable: 'docHubPass')]){
-    sh "docker login -u ${docHubUser} -p ${docHubPass}"          
+def call(String ProjectName, String ImageTag, String DockerHubUser) {
+
+    withCredentials([usernamePassword(
+        credentialsId: 'docHubCred',
+        usernameVariable: 'docHubUser',
+        passwordVariable: 'docHubPass'
+    )]) {
+
+        // Login securely using password-stdin
+        sh '''
+            echo "$docHubPass" | docker login \
+            -u "$docHubUser" \
+            --password-stdin
+        '''
     }
-    sh "docker push ${docHubUser}/${ProjectName}:${ImageTag}"
+
+    // Push the image after successful login
+    sh "docker push ${DockerHubUser}/${ProjectName}:${ImageTag}"
 }
